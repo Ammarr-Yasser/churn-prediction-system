@@ -18,11 +18,22 @@ pipelines = joblib.load(BASE_DIR / "all_churn_pipelines.pkl")
 X_test = pd.read_csv(BASE_DIR / "X_test_churn.csv")
 y_test = pd.read_csv(BASE_DIR / "y_test_churn.csv").squeeze()
 
+display_name_map = {
+    "log_reg_baseline": "Logistic Regression (Baseline)",
+    "decision_tree": "Decision Tree Classifier",
+    "random_forest": "Random Forest Classifier",
+    "knn": "K-Nearest Neighbors (KNN)",
+    "svm_rbf": "Support Vector Machine (RBF Kernel)",
+    "mlp": "Neural Network (Multilayer Perceptron)",
+}
+
 metrics_table = []
-best_model_name = None
+best_model_key = None
+best_model_display = None
 best_auc = -1.0
 
 for name, clf in pipelines.items():
+    display_name = display_name_map.get(name, name)
     y_proba = clf.predict_proba(X_test)[:, 1]
     y_pred = (y_proba >= 0.5).astype(int)
 
@@ -33,7 +44,7 @@ for name, clf in pipelines.items():
     auc = roc_auc_score(y_test, y_proba)
 
     metrics_table.append({
-        "model_name": name,
+        "model_name": display_name,
         "accuracy": round(acc, 3),
         "precision": round(prec, 3),
         "recall": round(rec, 3),
@@ -43,9 +54,10 @@ for name, clf in pipelines.items():
 
     if auc > best_auc:
         best_auc = auc
-        best_model_name = name
+        best_model_key = name
+        best_model_display = display_name
 
-best_model = pipelines[best_model_name]
+best_model = pipelines[best_model_key]
 
 probs = best_model.predict_proba(X_test)[:, 1]
 preds = (probs >= 0.5).astype(int)
@@ -62,7 +74,7 @@ sample_columns = results_df.columns
 def index():
     return render_template(
         "index.html",
-        best_model_name=best_model_name,
+        best_model_name=best_model_display,
         metrics_table=metrics_table,
         rows=sample_rows,
         columns=sample_columns
