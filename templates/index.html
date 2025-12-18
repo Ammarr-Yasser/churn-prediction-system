@@ -1,0 +1,69 @@
+<!doctype html>
+<html>
+<head>
+    <title>Telecom Churn Deployment</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1, h2 { margin-bottom: 8px; }
+        table { border-collapse: collapse; width: 100%; font-size: 13px; margin-bottom: 24px; }
+        th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .high-risk { background-color: #ffe6e6; }
+        .good-model { font-weight: bold; color: #006400; }
+    </style>
+</head>
+<body>
+    <h1>Telecom Customer Churn – Deployed Models</h1>
+    <p>Models are evaluated exactly as in the notebook; the best one by AUC is used for the sample predictions below.</p>
+
+    <h2>Model performance</h2>
+    <p>Best model: <span class="good-model">{{ best_model_name }}</span></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Accuracy</th>
+                <th>Precision</th>
+                <th>Recall</th>
+                <th>F1</th>
+                <th>AUC</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in metrics_table %}
+            <tr {% if row.model_name == best_model_name %}style="background-color:#e6ffe6;"{% endif %}>
+                <td>{{ row.model_name }}</td>
+                <td>{{ row.accuracy }}</td>
+                <td>{{ row.precision }}</td>
+                <td>{{ row.recall }}</td>
+                <td>{{ row.f1 }}</td>
+                <td>{{ row.auc }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Sample predictions (best model)</h2>
+    <p>Showing first 50 customers with true churn label, predicted churn, and churn probability.</p>
+
+    <table>
+        <thead>
+            <tr>
+                {% for col in columns %}
+                    <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr class="{% if row.predicted_churn == 1 %}high-risk{% endif %}">
+                {% for col in columns %}
+                    <td>{{ row[col] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
